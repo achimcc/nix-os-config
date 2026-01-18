@@ -115,7 +115,7 @@
     programs.git = {
       enable = true;
       userName = "Achim Schneider";
-      userEmail = "achim.schneider@posteo,de";
+      userEmail = "achim.schneider@posteo.de";
 
       # Optional: Nützliche Extras
       extraConfig = {

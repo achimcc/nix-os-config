@@ -69,6 +69,10 @@
     enable = true;
     userName = "Achim Schneider";
     userEmail = "achim.schneider@posteo.de";
+    signing = {
+      key = null;  # GPG wählt automatisch den Key passend zur E-Mail
+      signByDefault = true;
+    };
     extraConfig = {
       init.defaultBranch = "main";
       pull.rebase = true;

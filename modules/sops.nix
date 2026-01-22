@@ -52,6 +52,12 @@
       mode = "0400";
     };
 
+    # Syncthing Geräte-IDs
+    secrets."syncthing/devices/handy" = {
+      owner = "achim";
+      mode = "0400";
+    };
+
     # Template für NetworkManager Environment-Datei
     templates."nm-wifi-env" = {
       content = ''

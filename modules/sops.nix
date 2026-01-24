@@ -52,16 +52,6 @@
       mode = "0400";
     };
 
-    # Syncthing Geräte-IDs
-    secrets."syncthing/devices/handy" = {
-      owner = "achim";
-      mode = "0400";
-    };
-    secrets."syncthing/devices/handy-google" = {
-      owner = "achim";
-      mode = "0400";
-    };
-
     # ProtonVPN WireGuard Konfiguration
     secrets."protonvpn/endpoint" = {
       owner = "root";
@@ -70,6 +60,18 @@
     secrets."protonvpn/publickey" = {
       owner = "root";
       mode = "0400";
+    };
+
+    # SSH Key für Hetzner VPS
+    secrets."ssh/hetzner-vps" = {
+      owner = "achim";
+      mode = "0600";
+      path = "/home/achim/.ssh/hetzner-vps";
+    };
+    secrets."ssh/hetzner-vps-pub" = {
+      owner = "achim";
+      mode = "0644";
+      path = "/home/achim/.ssh/hetzner-vps.pub";
     };
 
     # Template für NetworkManager Environment-Datei

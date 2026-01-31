@@ -71,7 +71,7 @@ in
 
     # --- NITROKEY 3C NFC ---
     nitrokey-app2 # GUI-Verwaltung (FIDO2 PIN, Firmware-Update, OpenPGP)
-    pynitrokey # CLI-Tool: nitropy fido2/openpgp (Firmware-Updates, FIDO2-Verwaltung)
+    pkgs-unstable.pynitrokey # CLI-Tool: nitropy fido2/openpgp (Firmware-Updates, FIDO2-Verwaltung)
     libfido2 # CLI: fido2-token (Low-Level FIDO2-Verwaltung)
 
     # --- GNOME ERWEITERUNGEN ---
@@ -331,7 +331,7 @@ in
     userName = "Achim Schneider";
     userEmail = "achim.schneider@posteo.de";
     signing = {
-      key = "~/.ssh/id_ed25519.pub";
+      key = "~/.ssh/id_ed25519_sk.pub";
       signByDefault = true;
     };
     extraConfig = {
@@ -355,7 +355,7 @@ in
 
   # Allowed Signers für SSH-Commit-Verifizierung
   home.file.".ssh/allowed_signers".text = ''
-    achim.schneider@posteo.de ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKxoCdoA7621jMhv0wX3tx66NEZMv9tp8xdE76sEfjBI
+    achim.schneider@posteo.de sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJ/Bouatb6CsPRo6gbqTjZUBcZuBNlXu8LHh0cHnKyamAAAABHNzaDo= achim.schneider@posteo.de
   '';
 
   # --- GITHUB CLI ---

@@ -80,7 +80,7 @@
   users.users.achim = {
     isNormalUser = true;
     description = "Achim Schneider";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
     shell = pkgs.nushell;
   };
 

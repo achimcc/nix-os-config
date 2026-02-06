@@ -4,7 +4,7 @@ A **security-hardened**, declarative NixOS configuration focused on privacy, ano
 
 **🔒 Sicherheitsscore: 9.5/10** | [Security Hardening Details](docs/SECURITY-HARDENING.md)
 
-## 🆕 Recent Security Improvements (2026-02-05)
+## 🆕 Recent Security Improvements (2026-02-06)
 
 **Phase 1 - Critical Gaps (8/8 ✅):**
 - ✅ **Suricata VPN Monitoring**: IDS now monitors VPN interface (proton0) - closes monitoring blind spot
@@ -55,15 +55,15 @@ See [SECRET-ROTATION-POLICY.md](docs/SECRET-ROTATION-POLICY.md) for rotation sch
 
 | Component | Configuration |
 |-----------|---------------|
-| **NixOS Version** | 25.05 |
-| **Desktop** | GNOME (Wayland, GDM) |
+| **NixOS Version** | 26.05 (Yarara) |
+| **Desktop** | GNOME 49.3 (Wayland, GDM) |
 | **Shell** | Nushell + Starship + Modern Unix Tools |
-| **Editor** | Neovim (Rust IDE), VSCodium |
+| **Editor** | Neovim (Rust IDE), VSCodium (externe Terminal) |
 | **VPN** | ProtonVPN (WireGuard, Auto-Connect, Kill-Switch) |
 | **Encryption** | LUKS2 Full-Disk + FIDO2 + TPM 2.0 + Secure Boot |
 | **Secrets** | sops-nix (Age-encrypted) |
 | **Hardware Key** | Nitrokey 3C NFC (FIDO2, SSH, OpenPGP, TOTP) |
-| **Kernel** | Hardened Kernel + Memory Hardening + Lockdown Mode |
+| **Kernel** | 6.12.66-hardened1 + Memory Hardening + Lockdown Mode |
 | **Anonymity** | IPv6 disabled, Hostname randomized, No mDNS Broadcasting |
 
 ### Architecture
@@ -78,7 +78,7 @@ flake.nix                 # Flake Entry Point (gepinnte Inputs)
 ├── pkgs/
 │   └── default.nix       # Custom packages overlay
 └── modules/
-    ├── network.nix       # NetworkManager, DNS-over-TLS, DNSSEC, Anonymity, Firejail
+    ├── network.nix       # NetworkManager, DNS-over-TLS, DNSSEC, Anonymity, Firejail Sandbox
     ├── firewall.nix      # VPN Kill Switch + Port-Scan + DHCP Snooping + mDNS Limits + rp_filter
     ├── firewall-zones.nix # Network Segmentation Zones
     ├── protonvpn.nix     # WireGuard Auto-Connect
@@ -139,8 +139,9 @@ flake.nix                 # Flake Entry Point (gepinnte Inputs)
 
 ### Sandboxing & Hardening
 
-- **Firejail + AppArmor**: Double-layer sandboxing für kritische Apps
-  - Firejail: Tor Browser, LibreWolf, Spotify, Discord, FreeTube, Thunderbird, KeePassXC, Logseq, VSCodium, Evince, Newsflash
+- **Bubblewrap + AppArmor**: Modern sandboxing für kritische Apps
+  - Bubblewrap: VSCodium (Electron-kompatibel, minimale Isolation)
+  - Firejail: Tor Browser, LibreWolf, Spotify, Discord, FreeTube, Thunderbird, KeePassXC, Logseq, Evince, Newsflash
   - **🆕 AppArmor Custom Profiles**: LibreWolf, Thunderbird, VSCodium, Spotify, Discord (kernel-level MAC)
   - AppArmor Enforcement: `killUnconfinedConfinables = true`
 - **Hardened Kernel**: `linuxPackages_hardened` mit zusätzlichen sysctl-Parametern
@@ -242,7 +243,7 @@ Ungenutzte und potenziell unsichere Module sind blockiert:
 
 ### Prerequisites
 
-- NixOS 25.05 or newer
+- NixOS 26.05 or newer
 - UEFI system with Secure Boot support
 - Age key for secrets decryption
 - Nitrokey 3C NFC (optional, für FIDO2)
@@ -389,6 +390,8 @@ sops updatekeys secrets/secrets.yaml
 # - rust-analyzer + clippy
 # - LLDB Debugging
 # - TangleGuard (Dependency Graph Visualisierung)
+# - ⚠️ Integriertes Terminal: Nicht verfügbar (hardened Kernel + Electron PTY Issue)
+# - Externes Terminal: Ctrl+Shift+C öffnet Black Box Terminal
 ```
 
 ### Nix
@@ -621,8 +624,11 @@ nrs  → sudo nixos-rebuild switch --flake ...#achim-laptop
 
 ### Entwicklung
 
-- **Neovim**: Primary Editor (Rust IDE)
-- **VSCodium**: VS Code ohne Telemetrie (Firejail, 14 Extensions)
+- **Neovim**: Primary Editor (Rust IDE mit eingebautem Terminal)
+- **VSCodium**: VS Code ohne Telemetrie (Bubblewrap, 14 Extensions)
+  - ⚠️ **Terminal-Workaround**: Integriertes Terminal nicht verfügbar (hardened Kernel + Electron PTY Issue)
+  - **Externes Terminal**: `Ctrl+Shift+C` öffnet Black Box Terminal im Working Directory
+  - **Alternative**: `codium-with-terminal` startet VSCodium + Terminal automatisch
 - **Wildcard**: Regex-Tester
 - **Elastic**: Spring-Animationen designen
 
@@ -640,8 +646,9 @@ nrs  → sudo nixos-rebuild switch --flake ...#achim-laptop
 | KeePassXC | keepassxc.profile | Passwort-Datenbank |
 | Newsflash | newsflash.profile | RSS-Feeds |
 | Logseq | obsidian.profile | Whitelist ~/Dokumente/Logseq |
-| VSCodium | vscodium.profile | Whitelist ~/Projects, ~/nixos-config |
 | Evince | evince.profile | PDF-Dateien |
+
+**Hinweis**: VSCodium wird mit **Bubblewrap** statt Firejail gesandboxt (bessere Electron-Kompatibilität).
 
 ### Flatpak Applications
 
@@ -962,6 +969,31 @@ journalctl --grep="apparmor.*DENIED"
 # Profil temporär in Complain-Modus setzen
 sudo aa-complain /path/to/profile
 ```
+
+### VSCodium Terminal funktioniert nicht
+
+**Problem**: `forkpty(3) failed` - Integriertes Terminal kann nicht gestartet werden
+
+**Ursache**: Inkompatibilität zwischen hardened Kernel (6.12.66-hardened1) und Electron's PTY-Implementierung
+
+**Lösung**: Externes Terminal verwenden
+
+```bash
+# Option 1: Externes Terminal über VSCodium öffnen
+# In VSCodium: Ctrl+Shift+C
+
+# Option 2: VSCodium mit automatischem Terminal starten
+codium-with-terminal      # Startet VSCodium + Black Box Terminal
+codium-with-terminal .    # Öffnet aktuelles Verzeichnis
+
+# Option 3: Neovim als Alternative nutzen
+nvim                      # Eingebautes Terminal mit :terminal
+```
+
+**Workaround getestet**:
+- ✅ Externes Terminal (Black Box) funktioniert perfekt
+- ✅ Tasks können im externen Terminal ausgeführt werden
+- ✅ Neovim mit eingebautem Terminal als Alternative
 
 ## License
 
